@@ -1,0 +1,1917 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen_Dashboard:
+    Properties:
+      ContentLanguage: ="en-CA"
+      Fill: =RGBA(248, 249, 250, 1)
+      LoadingSpinnerColor: =RGBA(0, 51, 102, 1)
+      OnVisible: |-
+        =UpdateContext({locDashFilters: {
+            fiscal_year: "All",
+            quarter: "All",
+            activity_type: "All",
+            business_plan: "All",
+            intention_id: "All",
+            is_dm_pa: "All",
+            business_unit_id: "All",
+            outcome_id: "All"
+        }});
+        Set(locReallocPanelOpen, false);
+        Clear(colReallocEdits);
+        ClearCollect(colStatusRows, 'Bp Activity Status');
+        ClearCollect(colFilteredStatus,
+            Filter(
+                ForAll(colStatusRows As statusRow,
+                    With({act: LookUp(colActivities, ma_activityid = statusRow.crb7f_activity_id.ma_activityid)},
+                        {
+                            ma_activitystatusid: statusRow.ma_activitystatusid,
+                            ma_activityid:       statusRow.crb7f_activity_id.ma_activityid,
+                            ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                            ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                            ma_approval_status:  statusRow.ma_approval_status & "",
+                            ma_activity_status:  statusRow.ma_activity_status & "",
+                            ma_funds_obligated:  statusRow.funds_obligated,
+                            ma_funds_disbursed:  statusRow.funds_disbursed,
+                            ma_activity_name:    act.ma_activity,
+                            ma_businessunitid:   act.ma_businessunitid,
+                            ma_business_plan:    act.business_plan,
+                            ma_intention_id:     act.ma_intentionlistkey,
+                            ma_funds_allocated:  act.ma_funds_allocated,
+                            ma_activity_type:    act.ma_activity_type & "",
+                            ma_is_dm_pa:         act.ma_is_dm_pa & "",
+                            ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.ma_keyobjectiveid).outcome_id
+                        }
+                    )
+                ),
+                !IsBlank(ma_activity_name) &&
+                (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+            )
+        );
+        ClearCollect(colBusinessPlanOptions, Table({Value: "All"}));
+        Collect(colBusinessPlanOptions, Distinct('Bp Activities', business_plan));
+        ClearCollect(colIntentionOptions, Table({Value: "All"}));
+        Collect(colIntentionOptions, Distinct(colIntention, intention_id));
+        ClearCollect(colSpendingChart,
+            {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+            {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+            {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+        );
+        Set(locChartMax,
+            Max(
+                LookUp(colSpendingChart, FundType = "Allocated").Q1,
+                LookUp(colSpendingChart, FundType = "Allocated").Q2,
+                LookUp(colSpendingChart, FundType = "Allocated").Q3,
+                LookUp(colSpendingChart, FundType = "Allocated").Q4,
+                LookUp(colSpendingChart, FundType = "Obligated").Q1,
+                LookUp(colSpendingChart, FundType = "Obligated").Q2,
+                LookUp(colSpendingChart, FundType = "Obligated").Q3,
+                LookUp(colSpendingChart, FundType = "Obligated").Q4,
+                LookUp(colSpendingChart, FundType = "Disbursed").Q1,
+                LookUp(colSpendingChart, FundType = "Disbursed").Q2,
+                LookUp(colSpendingChart, FundType = "Disbursed").Q3,
+                LookUp(colSpendingChart, FundType = "Disbursed").Q4
+            )
+        )
+    Children:
+      - Dash_Chart_Gallery:
+          Control: Gallery@2.15.0
+          Variant: Horizontal
+          Properties:
+            Height: =Dash_ChartBG.Y + Dash_ChartBG.Height - Self.Y - 0
+            Items: |-
+              =Table(
+                    {Qtr: "Q1",
+                     Alloc: LookUp(colSpendingChart, FundType = "Allocated").Q1,
+                     Obl:   LookUp(colSpendingChart, FundType = "Obligated").Q1,
+                     Disb:  LookUp(colSpendingChart, FundType = "Disbursed").Q1},
+                    {Qtr: "Q2",
+                     Alloc: LookUp(colSpendingChart, FundType = "Allocated").Q2,
+                     Obl:   LookUp(colSpendingChart, FundType = "Obligated").Q2,
+                     Disb:  LookUp(colSpendingChart, FundType = "Disbursed").Q2},
+                    {Qtr: "Q3",
+                     Alloc: LookUp(colSpendingChart, FundType = "Allocated").Q3,
+                     Obl:   LookUp(colSpendingChart, FundType = "Obligated").Q3,
+                     Disb:  LookUp(colSpendingChart, FundType = "Disbursed").Q3},
+                    {Qtr: "Q4",
+                     Alloc: LookUp(colSpendingChart, FundType = "Allocated").Q4,
+                     Obl:   LookUp(colSpendingChart, FundType = "Obligated").Q4,
+                     Disb:  LookUp(colSpendingChart, FundType = "Disbursed").Q4}
+                )
+            ShowScrollbar: =false
+            TemplatePadding: =1
+            TemplateSize: =88
+            Width: =Dash_ChartBG.Width - 0
+            WrapCount: =3
+            X: =Dash_ChartBG.X + 0
+            Y: =Dash_ChartTitle.Y + 23
+          Children:
+            - Chart_Bar_Disb:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(0, 112, 68, 1)
+                  Height: =IfError(ThisItem.Obl / locChartMax, 0) * (Parent.TemplateHeight - 28)
+                  OnSelect: =Select(Parent)
+                  Width: =22
+                  X: =56
+                  Y: =Parent.TemplateHeight - 24 - Self.Height
+            - Chart_Bar_Obl:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(212, 93, 0, 1)
+                  Height: =IfError(ThisItem.Obl / locChartMax, 0) * (Parent.TemplateHeight - 28)
+                  OnSelect: =Select(Parent)
+                  Width: =22
+                  X: =30
+                  Y: =Parent.TemplateHeight - 24 - Self.Height
+            - Chart_Bar_Alloc:
+                Control: Rectangle@2.3.0
+                Properties:
+                  Fill: =RGBA(0, 119, 205, 1)
+                  Height: =IfError(ThisItem.Alloc / locChartMax, 0) * (Parent.TemplateHeight - 28)
+                  OnSelect: =Select(Parent)
+                  Width: =22
+                  X: =4
+                  Y: =Parent.TemplateHeight - 24 - Self.Height
+      - Chart_Leg_DisbText:
+          Control: ModernText@1.0.0
+          Properties:
+            Color: =RGBA(87, 97, 112, 0.01)
+            Height: =14
+            PaddingBottom: =0
+            PaddingLeft: =3
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =9
+            Text: ="Disbursed"
+            Width: =65
+            Wrap: =false
+            X: =40
+            Y: =40
+      - Chart_Leg_DisbDot:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0, 112, 68, 1)
+            Height: =14
+            Width: =10
+            X: =40
+            Y: =40
+      - Chart_Leg_OblText:
+          Control: ModernText@1.0.0
+          Properties:
+            Color: =RGBA(87, 97, 112, 0.01)
+            Height: =14
+            PaddingBottom: =0
+            PaddingLeft: =3
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =9
+            Text: ="Obligated"
+            Width: =65
+            Wrap: =false
+            X: =40
+            Y: =40
+      - Chart_Leg_OblDot:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(212, 93, 0, 1)
+            Height: =14
+            Width: =10
+            X: =40
+            Y: =40
+      - Chart_Leg_AllocText:
+          Control: ModernText@1.0.0
+          Properties:
+            Color: =RGBA(87, 97, 112, 0.01)
+            Height: =14
+            PaddingBottom: =0
+            PaddingLeft: =3
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =9
+            Text: ="Allocated"
+            Width: =65
+            Wrap: =false
+            X: =40
+            Y: =40
+      - Chart_Leg_AllocDot:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0, 119, 205, 1)
+            Height: =14
+            Width: =10
+            X: =Dash_ChartBG.X + 12
+            Y: =40
+      - Chart_Qtr_Label:
+          Control: ModernText@1.0.0
+          Properties:
+            Align: =Align.Center
+            Color: =RGBA(87, 97, 112, 1)
+            Height: =18
+            OnSelect: =Select(Parent)
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+            PaddingTop: =0
+            Size: =10
+            Text: =ThisItem.Qtr
+            Width: =Dash_ChartBG.Width - 0
+            Wrap: =false
+            X: =16
+            Y: =729
+      - Dash_ChartBG:
+          Control: Rectangle@2.3.0
+          Group: Dash_Chart
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =Parent.Height - If(locUserRole in ["DIR","ED","ADMO"], 642, 560) - 16
+            Width: =368
+            X: =16
+            Y: =If(locUserRole in ["DIR","ED","ADMO"], 642, 560)
+      - Dash_ChartTitle:
+          Control: Label@2.5.1
+          Group: Dash_Chart
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(27, 31, 36, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =12
+            Text: ="Spending by Quarter"
+            Width: =340
+            X: =30
+            Y: =If(locUserRole in ["DIR","ED","ADMO"], 656, 574)
+      - KPI_Funds_Disbursed:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            BorderColor: =RGBA(120, 191, 38, 1)
+            BorderThickness: =0.5
+            ContentLanguage: ="en-CA"
+            EnableChildFocus: =false
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =74
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =1
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            PaddingBottom: =6
+            PaddingLeft: =6
+            PaddingRight: =6
+            PaddingTop: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Width: =368
+            X: =16
+            Y: =472
+          Children:
+            - KPI_FundsDisb_Label:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(0, 112, 68, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =18
+                  LineHeight: =1
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =10
+                  Text: ="Funds Disbursed"
+                  Width: =340
+                  X: =40
+                  Y: =40
+            - KPI_FundsDisb_Value:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(23, 76, 56, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =30
+                  LineHeight: =1
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =22
+                  Text: |
+                    ="$" & Text(Sum(colFilteredStatus, ma_funds_disbursed), "[$-en-US]#,##0")
+                  Width: =340
+                  X: =40
+                  Y: =40
+            - KPI_FundsDisb_Sub:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(128, 139, 150, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  Height: =16
+                  LineHeight: =1
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Size: =10
+                  Text: =Text(Round(IfError(Sum(colFilteredStatus, ma_funds_disbursed) / Sum(colFilteredStatus, ma_funds_allocated) * 100, 0), 0)) & "% of allocated"
+                  Width: =340
+                  X: =40
+                  Y: =40
+      - KPI_Funds_Obligated:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            BorderColor: =RGBA(0, 182, 237, 1)
+            BorderThickness: =0.5
+            Height: =74
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =1
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            PaddingBottom: =6
+            PaddingLeft: =6
+            PaddingRight: =6
+            PaddingTop: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Width: =368
+            X: =16
+            Y: =390
+          Children:
+            - KPI_FundsOblig_Label:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(0, 119, 205, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =18
+                  Size: =10
+                  Text: ="Funds Obligated"
+                  Width: =340
+                  X: =40
+                  Y: =40
+            - KPI_FundsOblig_Value:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(0, 44, 78, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =32
+                  Size: =22
+                  Text: |
+                    ="$" & Text(Sum(colFilteredStatus, ma_funds_obligated), "[$-en-US]#,##0")
+                  Width: =340
+                  X: =40
+                  Y: =40
+            - KPI_FundsOblig_Sub:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(128, 139, 150, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  Height: =16
+                  Size: =10
+                  Text: =Text(Round(IfError(Sum(colFilteredStatus, ma_funds_obligated) / Sum(colFilteredStatus, ma_funds_allocated) * 100, 0), 0)) & "% of allocated"
+                  Width: =340
+                  X: =40
+                  Y: =40
+      - KIP_Funds_Allocated:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            BorderColor: =RGBA(0, 44, 78, 1)
+            BorderThickness: =0.5
+            Height: =74
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutGap: =1
+            LayoutJustifyContent: =LayoutJustifyContent.Center
+            PaddingBottom: =6
+            PaddingLeft: =6
+            PaddingRight: =6
+            PaddingTop: =6
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Width: =368
+            X: =16
+            Y: =309
+          Children:
+            - KPI_FundsAlloc_Label:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(0, 119, 205, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =18
+                  Size: =10
+                  Text: ="Funds Allocated"
+                  Width: =340
+                  X: =40
+                  Y: =40
+            - KPI_FundsAlloc_Value:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(0, 44, 78, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =32
+                  Size: =22
+                  Text: |
+                    ="$" & Text(Sum(colFilteredStatus, ma_funds_allocated), "[$-en-US]#,##0")
+                  Width: =340
+                  X: =40
+                  Y: =40
+            - KPI_FundsAlloc_Sub:
+                Control: Label@2.5.1
+                Properties:
+                  BorderColor: =RGBA(0, 0, 0, 1)
+                  Color: =RGBA(128, 139, 150, 1)
+                  DisabledColor: =RGBA(186, 186, 186, 1)
+                  DisplayMode: =DisplayMode.View
+                  Font: =Font.'Open Sans'
+                  Height: =16
+                  Size: =10
+                  Text: =locCurrentFY & " total"
+                  Width: =340
+                  X: =40
+                  Y: =40
+      - KPI_PendingAppr_Card:
+          Control: Rectangle@2.3.0
+          Group: KPI_Pending_Approval
+          Properties:
+            BorderColor: =RGBA(237, 140, 0, 1)
+            BorderThickness: |+
+              =0.5
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =74
+            Width: =368
+            X: =16
+            Y: =If(locUserRole in ["DIR","ED","ADMO"], 308, 226)
+      - KPI_PendingAppr_Sub:
+          Control: Label@2.5.1
+          Group: KPI_Pending_Approval
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(128, 139, 150, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            Height: =16
+            Size: =10
+            Text: ="awaiting director review"
+            Width: =340
+            X: =30
+            Y: =279
+      - KPI_PendingAppr_Value:
+          Control: Label@2.5.1
+          Group: KPI_Pending_Approval
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =If(CountRows(Filter(colFilteredStatus, Text(ma_approval_status) = "Submitted")) > 0, RGBA(158, 43, 51, 1), RGBA(255, 200, 54, 1))
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =32
+            Size: =22
+            Text: =Text(CountRows(Filter(colFilteredStatus, Text(ma_approval_status) = "Submitted")))
+            Width: =340
+            X: =30
+            Y: =247
+      - KPI_PendingAppr_Label:
+          Control: Label@2.5.1
+          Group: KPI_Pending_Approval
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(212, 93, 0, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =18
+            Size: =10
+            Text: ="Pending Approval"
+            Width: =340
+            X: =30
+            Y: =231
+      - KPI_PendingAppr_Accent:
+          Control: Rectangle@2.3.0
+          Group: KPI_Pending_Approval
+          Properties:
+            BorderColor: =RGBA(237, 140, 0, 1)
+            BorderThickness: =0.5
+            Fill: =RGBA(209, 144, 0, 1)
+            Height: =74
+            Visible: =CountRows(Filter(colFilteredStatus, Text(ma_approval_status) = "Submitted")) > 0
+            Width: =4
+            X: =16
+            Y: =If(locUserRole in ["DIR","ED","ADMO"], 308, 226)
+      - KPI_PendingYours_Card:
+          Control: Rectangle@2.3.0
+          Group: KPI_Pending_Yours
+          Properties:
+            BorderColor: =RGBA(237, 140, 0, 1)
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =74
+            Visible: =locUserRole in ["DIR", "ED", "ADMO"]
+            Width: =368
+            X: =16
+            Y: =226
+      - KPI_PendingYours_Sub:
+          Control: Label@2.5.1
+          Group: KPI_Pending_Yours
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(128, 139, 150, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            Height: =16
+            Size: =10
+            Text: ="tap to open Review & Approve"
+            Visible: =locUserRole in ["DIR", "ED", "ADMO"]
+            Width: =340
+            X: =30
+            Y: =279
+      - KPI_PendingYours_Value:
+          Control: Label@2.5.1
+          Group: KPI_Pending_Yours
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(158, 43, 51, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =32
+            OnSelect: =Navigate(Screen_Review, ScreenTransition.Fade)
+            Size: =22
+            Text: =Text(CountRows(Filter(colFilteredStatus, (locUserRole = "DIR" && Text(ma_approval_status) = "Submitted") || (locUserRole = "ED" && Text(ma_approval_status) = "Director Approved") || (locUserRole = "ADMO" && Text(ma_approval_status) = "ED Reviewed"))))
+            Visible: =locUserRole in ["DIR", "ED", "ADMO"]
+            Width: =340
+            X: =30
+            Y: =247
+      - KPI_PendingYours_Label:
+          Control: Label@2.5.1
+          Group: KPI_Pending_Yours
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(212, 93, 0, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =18
+            Size: =10
+            Text: ="Pending Your Approval"
+            Visible: =locUserRole in ["DIR", "ED", "ADMO"]
+            Width: =340
+            X: =30
+            Y: =231
+      - KPI_PendingYours_Accent:
+          Control: Rectangle@2.3.0
+          Group: KPI_Pending_Yours
+          Properties:
+            BorderColor: =RGBA(237, 140, 0, 1)
+            BorderThickness: =0.5
+            Fill: =RGBA(209, 144, 0, 1)
+            Height: =74
+            Visible: =locUserRole in ["DIR", "ED", "ADMO"]
+            Width: =4
+            X: =16
+            Y: =226
+      - KPI_TotalAct_Card:
+          Control: Rectangle@2.3.0
+          Group: KPI_Total_Activities
+          Properties:
+            BorderColor: =RGBA(172, 164, 163, 1)
+            BorderThickness: =0.5
+            DisplayMode: =DisplayMode.View
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =74
+            Width: =368
+            X: =16
+            Y: =144
+      - KPI_TotalAct_Sub:
+          Control: Label@2.5.1
+          Group: KPI_Total_Activities
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(128, 139, 150, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            Height: =16
+            Size: =10
+            Text: ="across all scoped business units"
+            Width: =340
+            X: =30
+            Y: =197
+      - KPI_TotalAct_Value:
+          Control: Label@2.5.1
+          Group: KPI_Total_Activities
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(51, 51, 51, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =32
+            Size: =22
+            Text: =Text(CountRows(colFilteredStatus))
+            Width: =340
+            X: =30
+            Y: =165
+      - KPI_TotalAct_Label:
+          Control: Label@2.5.1
+          Group: KPI_Total_Activities
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(84, 88, 96, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =18
+            Size: =10
+            Text: ="Total Activities"
+            Width: =340
+            X: =30
+            Y: =149
+      - Dash_Gallery:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            DelayItemLoading: =false
+            Height: =550
+            Items: =SortByColumns(colFilteredStatus, "ma_activity_name", SortOrder.Ascending)
+            LoadingSpinner: =LoadingSpinner.None
+            TemplatePadding: =6
+            TemplateSize: =52
+            Width: =Parent.Width - 401
+            WrapCount: =7
+            X: =401
+            Y: =197
+          Children:
+            - Quarter:
+                Control: ModernText@1.0.0
+                Properties:
+                  Align: =Align.Center
+                  Height: =52
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.ma_quarter
+                  Width: =67
+                  Wrap: =false
+                  X: =1223-401
+            - FundsDisb:
+                Control: ModernText@1.0.0
+                Properties:
+                  Align: =Align.Right
+                  Height: =52
+                  OnSelect: =Select(Parent)
+                  Text: =Text(ThisItem.ma_funds_disbursed, "$#,##0")
+                  Width: =100
+                  Wrap: =false
+                  X: =1123-401
+            - FundsAlloc:
+                Control: ModernText@1.0.0
+                Properties:
+                  Align: =Align.Right
+                  Height: =52
+                  OnSelect: =Select(Parent)
+                  Text: =Text(ThisItem.ma_funds_allocated, "$#,##0")
+                  Width: =100
+                  Wrap: =false
+                  X: =1023-401
+            - ApprovalStatus:
+                Control: ModernText@1.0.0
+                Properties:
+                  Height: =52
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.ma_approval_status
+                  Width: =132
+                  Wrap: =false
+                  X: =891-401
+            - ActivityStatus:
+                Control: ModernText@1.0.0
+                Properties:
+                  Height: =52
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.ma_activity_status
+                  Width: =118
+                  Wrap: =false
+                  X: =773-401
+            - BusinessUnit:
+                Control: ModernText@1.0.0
+                Properties:
+                  Height: =52
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.ma_businessunitid
+                  Width: =196
+                  Wrap: =false
+                  X: =567-401
+            - Activity:
+                Control: ModernText@1.0.0
+                Properties:
+                  Height: =52
+                  OnSelect: =Select(Parent)
+                  Text: =ThisItem.ma_activityid
+                  Wrap: =false
+      - Dash_GalleryToolbar:
+          Control: Rectangle@2.3.0
+          Group: Dash_Gallery_Toolbar
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =48
+            Width: =Parent.Width - 401
+            X: =401
+            Y: =138
+      - Dash_ReallocBtn:
+          Control: Classic/Button@2.2.0
+          Group: Dash_Gallery_Toolbar
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =ColorFade(Self.Fill, -15%)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledBorderColor: =ColorFade(Self.BorderColor, 70%)
+            DisabledColor: =ColorFade(Self.Fill, 90%)
+            DisabledFill: =ColorFade(Self.Fill, 70%)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(12, 59, 94, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =34
+            HoverBorderColor: =ColorFade(Self.BorderColor, 20%)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(17, 80, 128, 1)
+            OnSelect: =Set(locReallocPanelOpen, true); ClearCollect(colReallocScope, colActivities); Clear(colReallocEdits)
+            PressedBorderColor: =Self.Fill
+            PressedColor: =Self.Fill
+            PressedFill: =RGBA(8, 42, 67, 1)
+            Size: =13
+            Text: ="Reallocate Funds"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Visible: =locUserRole in ["ADMO", "ED", "ADMIN"]
+            Width: =168
+            X: =1185
+            Y: =145
+      - Dash_Print_Btn:
+          Control: Classic/Button@2.2.0
+          Group: Dash_Gallery_Toolbar
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =ColorFade(Self.Fill, -15%)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledBorderColor: =ColorFade(Self.BorderColor, 70%)
+            DisabledColor: =ColorFade(Self.Fill, 90%)
+            DisabledFill: =ColorFade(Self.Fill, 70%)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(12, 59, 94, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =34
+            HoverBorderColor: =ColorFade(Self.BorderColor, 20%)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(17, 80, 128, 1)
+            OnSelect: =Set(locPrintUrl, ""); Set(locPrintPending, true)
+            PressedBorderColor: =Self.Fill
+            PressedColor: =Self.Fill
+            PressedFill: =RGBA(8, 42, 67, 1)
+            Size: =13
+            Text: ="Print Plan"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Visible: =locUserRole = "ADMO"
+            Width: =120
+            X: =Parent.Width - 312
+            Y: =145
+      - Dash_ActivitiesLabel:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Toolbar
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =28
+            Size: =15
+            Text: ="Activities"
+            Width: =200
+            X: =417
+            Y: =148
+      - Dash_FilterBar_BG:
+          Control: Rectangle@2.3.0
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =58
+            Width: =Parent.Width
+            Y: =70
+      - Dash_Filter_Outcome:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: |-
+              =ForAll(colOutcome, {Value: outcome_title})
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {outcome_id: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll('Bp Activity Status' As statusRow,
+                          With({act: LookUp(colActivities, activity_id = statusRow.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.activity,
+                                  ma_businessunitid:   act.'Business Unit ID',
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.'Intention List Key',
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.activity_type & "",
+                                  ma_is_dm_pa:         act.is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.'Key Objective ID').outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Visible: =locUserRole = "ADMO"
+            Width: =158
+            X: =Dash_Filter_BU.X + 158 + 8
+            Y: =80
+      - Dash_Filter_BU:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: |-
+              =ForAll(colBusinessUnitID, {Value: business_unit_name})
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {business_unit_id: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll('Bp Activity Status' As statusRow,
+                          With({act: LookUp(colActivities, activity_id = statusRow.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.activity,
+                                  ma_businessunitid:   act.'Business Unit ID',
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.'Intention List Key',
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.activity_type & "",
+                                  ma_is_dm_pa:         act.is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.'Key Objective ID').outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Visible: =locUserRole in ["ADMO", "ED"]
+            Width: =158
+            X: =Dash_Filter_DMPA.X + 158 + 8
+            Y: =80
+      - Dash_Filter_DMPA:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: =["All","Yes","No"]
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {is_dm_pa: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colStatusRows, 'Bp Activity Status');
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll(colStatusRows As statusRow,
+                          With({act: LookUp(colActivities, ma_activityid = statusRow.crb7f_activity_id.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.crb7f_activity_id.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.ma_activity,
+                                  ma_businessunitid:   act.ma_businessunitid,
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.ma_intentionlistkey,
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.ma_activity_type & "",
+                                  ma_is_dm_pa:         act.ma_is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.ma_keyobjectiveid).outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Width: =158
+            X: =Dash_Filter_Intention.X + 158 + 8
+            Y: =80
+      - Dash_Filter_Intention:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =DisplayMode.View
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: |-
+              =// Dash_Filter_Intention — Items property
+              colIntentionOptions
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {intention_id: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colStatusRows, 'Bp Activity Status');
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll(colStatusRows As statusRow,
+                          With({act: LookUp(colActivities, ma_activityid = statusRow.crb7f_activity_id.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.crb7f_activity_id.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.ma_activity,
+                                  ma_businessunitid:   act.ma_businessunitid,
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.ma_intentionlistkey,
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.ma_activity_type & "",
+                                  ma_is_dm_pa:         act.ma_is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.ma_keyobjectiveid).outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Visible: |-
+              =// Dash_Filter_Intention — Visible property
+              // Show only when the activity type filter is People or unset (All)
+              locDashFilters.activity_type = "People" || locDashFilters.activity_type = "All"
+            Width: =158
+            X: =Dash_Filter_BusinessPlan.X + 158 + 8
+            Y: =80
+      - Dash_Filter_BusinessPlan:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: =colBusinessPlanOptions
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {business_plan: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colStatusRows, 'Bp Activity Status');
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll(colStatusRows As statusRow,
+                          With({act: LookUp(colActivities, ma_activityid = statusRow.crb7f_activity_id.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.crb7f_activity_id.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.ma_activity,
+                                  ma_businessunitid:   act.ma_businessunitid,
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.ma_intentionlistkey,
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.ma_activity_type & "",
+                                  ma_is_dm_pa:         act.ma_is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.ma_keyobjectiveid).outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Width: =158
+            X: =Dash_Filter_ActivityType.X + 158 + 8
+            Y: =80
+      - Dash_Filter_ActivityType:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: =["All","Project","Program","Initiative","Administrative"]
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {activity_type: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colStatusRows, 'Bp Activity Status');
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll(colStatusRows As statusRow,
+                          With({act: LookUp(colActivities, ma_activityid = statusRow.crb7f_activity_id.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.crb7f_activity_id.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.ma_activity,
+                                  ma_businessunitid:   act.ma_businessunitid,
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.ma_intentionlistkey,
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.ma_activity_type & "",
+                                  ma_is_dm_pa:         act.ma_is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.ma_keyobjectiveid).outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Width: =158
+            X: =Dash_Filter_Quarter.X + 158 + 8
+            Y: =80
+      - Dash_Filter_Quarter:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: =["All","Q1","Q2","Q3","Q4"]
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {quarter: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colStatusRows, 'Bp Activity Status');
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll(colStatusRows As statusRow,
+                          With({act: LookUp(colActivities, ma_activityid = statusRow.crb7f_activity_id.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.crb7f_activity_id.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.ma_activity,
+                                  ma_businessunitid:   act.ma_businessunitid,
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.ma_intentionlistkey,
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.ma_activity_type & "",
+                                  ma_is_dm_pa:         act.ma_is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.ma_keyobjectiveid).outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Width: =158
+            X: =Dash_Filter_FY.X + 158 + 8
+            Y: =80
+      - Dash_Filter_FY:
+          Control: Classic/DropDown@2.3.1
+          Group: Dash_Filters
+          Properties:
+            BorderColor: =RGBA(69, 69, 69, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(35, 31, 32, 1)
+            ChevronDisabledBackground: =RGBA(215, 210, 204, 1)
+            ChevronDisabledFill: =RGBA(235, 233, 229, 1)
+            ChevronFill: =RGBA(255, 255, 255, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, 20%)
+            ChevronHoverFill: =Self.ChevronFill
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(186, 186, 186, 1)
+            Items: |-
+              =ForAll(colFiscalYear, {Value: fiscal_year})
+            Items.Value: =Value
+            OnChange: |-
+              =UpdateContext({locDashFilters: Patch(locDashFilters, {fiscal_year: If(Self.Selected.Value = "All", "All", Self.Selected.Value)})});
+              ClearCollect(colStatusRows, 'Bp Activity Status');
+              ClearCollect(colFilteredStatus,
+                  Filter(
+                      ForAll(colStatusRows As statusRow,
+                          With({act: LookUp(colActivities, ma_activityid = statusRow.crb7f_activity_id.ma_activityid)},
+                              {
+                                  ma_activitystatusid: statusRow.ma_activitystatusid,
+                                  ma_activityid:       statusRow.crb7f_activity_id.ma_activityid,
+                                  ma_fiscal_year:      statusRow.crb7f_fiscal_year.fiscal_year,
+                                  ma_quarter:          LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr,
+                                  ma_approval_status:  statusRow.ma_approval_status & "",
+                                  ma_activity_status:  statusRow.ma_activity_status & "",
+                                  ma_funds_obligated:  statusRow.funds_obligated,
+                                  ma_funds_disbursed:  statusRow.funds_disbursed,
+                                  ma_activity_name:    act.ma_activity,
+                                  ma_businessunitid:   act.ma_businessunitid,
+                                  ma_business_plan:    act.business_plan,
+                                  ma_intention_id:     act.ma_intentionlistkey,
+                                  ma_funds_allocated:  act.funds_allocated,
+                                  ma_activity_type:    act.ma_activity_type & "",
+                                  ma_is_dm_pa:         act.ma_is_dm_pa & "",
+                                  ma_outcome_id:       LookUp(colKeyObjective, key_objective_id = act.ma_keyobjectiveid).outcome_id
+                              }
+                          )
+                      ),
+                      !IsBlank(ma_activity_name) &&
+                      (locDashFilters.fiscal_year = "All" || ma_fiscal_year = locDashFilters.fiscal_year) &&
+                      (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) &&
+                      (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) &&
+                      (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) &&
+                      (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) &&
+                      (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) &&
+                      (locDashFilters.is_dm_pa = "All" || ma_is_dm_pa = locDashFilters.is_dm_pa) &&
+                      (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)
+                  )
+              );
+              ClearCollect(colSpendingChart,
+                  {FundType: "Allocated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_allocated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_allocated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_allocated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_allocated)},
+                  {FundType: "Obligated", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_obligated), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_obligated), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_obligated), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_obligated)},
+                  {FundType: "Disbursed", Q1: Sum(Filter(colFilteredStatus, ma_quarter = "Q1"), ma_funds_disbursed), Q2: Sum(Filter(colFilteredStatus, ma_quarter = "Q2"), ma_funds_disbursed), Q3: Sum(Filter(colFilteredStatus, ma_quarter = "Q3"), ma_funds_disbursed), Q4: Sum(Filter(colFilteredStatus, ma_quarter = "Q4"), ma_funds_disbursed)}
+              )
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.SelectionFill, -30%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(0, 176, 240, 1)
+            Size: =11
+            Width: =158
+            X: =If(locUserRole = "ADMO", (Parent.Width - 8*158 - 7*8) / 2, If(locUserRole = "ED", (Parent.Width - 7*158 - 6*8) / 2, (Parent.Width - 6*158 - 5*8) / 2))
+            Y: =80
+      - Dash_ColDivider:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(209, 213, 218, 1)
+            Height: =Parent.Height - 128
+            Width: =1
+            X: =400
+            Y: =128
+      - Dash_Header_BG:
+          Control: Rectangle@2.3.0
+          Group: Dash_Header
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(12, 59, 94, 1)
+            Height: =70
+            Width: =Parent.Width
+      - Dash_Title:
+          Control: Label@2.5.1
+          Group: Dash_Header
+          Properties:
+            Align: =Align.Center
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.Arial
+            FontWeight: =FontWeight.Semibold
+            Height: =30
+            Size: =15
+            Text: ="TCS Operational Planning — Dashboard"
+            Width: =800
+            X: =(Parent.Width - 800) / 2
+            Y: =20
+      - Dash_Back_Btn:
+          Control: Classic/Button@2.2.0
+          Group: Dash_Header
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =ColorFade(Self.Fill, -15%)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledBorderColor: =ColorFade(Self.BorderColor, 70%)
+            DisabledColor: =ColorFade(Self.Fill, 90%)
+            DisabledFill: =ColorFade(Self.Fill, 70%)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 0.15)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =36
+            HoverBorderColor: =ColorFade(Self.BorderColor, 20%)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(255, 255, 255, 0.25)
+            OnSelect: =Navigate(Screen_Home, ScreenTransition.Fade)
+            PaddingBottom: =3
+            PaddingLeft: =3
+            PaddingRight: =3
+            PaddingTop: =3
+            PressedBorderColor: =Self.Fill
+            PressedColor: =Self.Fill
+            PressedFill: =RGBA(255, 255, 255, 0.08)
+            Size: =13
+            Text: ="← Home"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Width: =100
+            X: =16
+            Y: =17
+      - Dash_User_Label:
+          Control: Label@2.5.1
+          Group: Dash_Header
+          Properties:
+            Align: =Align.Right
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =30
+            Size: =12
+            Text: =locUserDisplayName & "  |  " & locUserRole
+            Width: =400
+            X: =Parent.Width - 420
+            Y: =22
+      - Dash_ColHdr_BG:
+          Control: Rectangle@2.3.0
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(246, 247, 249, 1)
+            Height: =34
+            Width: =Parent.Width - 401
+            X: =401
+            Y: =186
+      - Dash_ColHdr_BU:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =11
+            Text: ="Business Unit"
+            Width: =196
+            X: =567
+            Y: =193
+      - Dash_ColHdr_Activity:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =11
+            Text: ="Activity"
+            Width: =222
+            X: =417
+            Y: =193
+      - Dash_ColHdr_ActStatus:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =11
+            Text: ="Activity Status"
+            Width: =118
+            X: =773
+            Y: =193
+      - Dash_ColHdr_ApprStatus:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =11
+            Text: ="Approval Status"
+            Width: =132
+            X: =891
+            Y: =193
+      - Dash_ColHdr_FundsAlloc:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            Align: =Align.Right
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =11
+            Text: ="Funds Alloc."
+            Width: =100
+            X: =1023
+            Y: =193
+      - Dash_ColHdr_Quarter:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            Align: =Align.Center
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =11
+            Text: ="Quarter"
+            Width: =67
+            X: =1223
+            Y: =193
+      - Dash_ColHdr_FundsDisb:
+          Control: Label@2.5.1
+          Group: Dash_Gallery_Col_Hdrs
+          Properties:
+            Align: =Align.Right
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(71, 69, 64, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =11
+            Text: ="Funds Disb."
+            Width: =100
+            X: =1123
+            Y: =193
+      - Realloc_Backdrop:
+          Control: Rectangle@2.3.0
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(12, 59, 94, 0.45)
+            Height: =Parent.Height
+            Visible: =locReallocPanelOpen
+            Width: =Parent.Width
+      - Realloc_Panel:
+          Control: Rectangle@2.3.0
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =Parent.Height
+            Visible: =locReallocPanelOpen
+            Width: =500
+            X: =Parent.Width - 500
+      - Realloc_CancelLink:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            Align: =Align.Center
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(17, 80, 128, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =24
+            OnSelect: =Set(locReallocPanelOpen, false); Clear(colReallocEdits)
+            Text: ="Cancel — discard changes"
+            Visible: =locReallocPanelOpen
+            Width: =468
+            X: =Parent.Width - 484
+            Y: =Parent.Height - 68
+      - Realloc_SaveBtn:
+          Control: Classic/Button@2.2.0
+          Group: Realloc
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =ColorFade(Self.Fill, -15%)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledBorderColor: =ColorFade(Self.BorderColor, 70%)
+            DisabledColor: =ColorFade(Self.Fill, 90%)
+            DisabledFill: =ColorFade(Self.Fill, 70%)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(12, 59, 94, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =44
+            HoverBorderColor: =ColorFade(Self.BorderColor, 20%)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(17, 80, 128, 1)
+            OnSelect: |-
+              =ForAll(colReallocEdits As edit,
+                  Patch('Bp Activities',
+                      LookUp('Bp Activities', activity_id = edit.ma_activityid),
+                      {funds_allocated: edit.ma_funds_allocated}
+                  )
+              );
+              ClearCollect(colActivities, Filter('Bp Activities', IsEmpty(colUserScope) || 'Business Unit ID' in colUserScope.business_unit_id));
+              ClearCollect(colFilteredStatus, Filter(ForAll('Bp Activity Status' As statusRow, With({act: LookUp(colActivities, activity_id = statusRow.ma_activityid)}, {ma_activitystatusid: statusRow.ma_activitystatusid, ma_activityid: statusRow.ma_activityid, crb7f_fiscal_year: statusRow.crb7f_fiscal_year.fiscal_year, ma_quarter: LookUp(colStatusQtrMap, ma_activitystatusid = statusRow.ma_activitystatusid).qtr, ma_approval_status: statusRow.ma_approval_status & "", ma_activity_status: statusRow.ma_activity_status & "", ma_funds_obligated: statusRow.ma_funds_obligated, ma_funds_disbursed: statusRow.ma_funds_disbursed, ma_activity_name: act.activity, ma_businessunitid: act.'Business Unit ID', ma_business_plan: act.'Business Plan', ma_intention_id: act.'Intention List Key', ma_funds_allocated: act.funds_allocated, ma_activity_type: act.activity_type & "", ma_is_dm_pa: act.is_dm_pa & "", ma_outcome_id: LookUp(colKeyObjective, key_objective_id = act.'Key Objective ID').outcome_id})), !IsBlank(ma_activity_name) && (locDashFilters.quarter = "All" || ma_quarter = locDashFilters.quarter) && (locDashFilters.business_plan = "All" || ma_business_plan = locDashFilters.business_plan) && (locDashFilters.intention_id = "All" || ma_intention_id = locDashFilters.intention_id) && (locDashFilters.business_unit_id = "All" || ma_businessunitid = locDashFilters.business_unit_id) && (locDashFilters.activity_type = "All" || ma_activity_type = locDashFilters.activity_type) && (locDashFilters.is_dm_pa = "All" || Text(ma_is_dm_pa) = locDashFilters.is_dm_pa) && (locDashFilters.outcome_id = "All" || ma_outcome_id = locDashFilters.outcome_id)));
+              Set(locReallocPanelOpen, false);
+              Clear(colReallocEdits)
+            PressedBorderColor: =Self.Fill
+            PressedColor: =Self.Fill
+            PressedFill: =RGBA(8, 42, 67, 1)
+            Size: =13
+            Text: ="Save Changes"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Visible: =locReallocPanelOpen
+            Width: =468
+            X: =Parent.Width - 484
+            Y: =Parent.Height - 120
+      - Realloc_Gallery:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            DelayItemLoading: =false
+            Height: =Parent.Height - 220
+            Items: =colReallocScope
+            LoadingSpinner: =LoadingSpinner.None
+            TemplateSize: =50
+            Visible: =locReallocPanelOpen
+            Width: =500
+            X: =Parent.Width - 500
+            Y: =100
+      - Realloc_TotalBG:
+          Control: Rectangle@2.3.0
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(246, 247, 249, 1)
+            Height: =44
+            Visible: =locReallocPanelOpen
+            Width: =500
+            X: =Parent.Width - 500
+            Y: =Parent.Height - 172
+      - Realloc_TotalValue:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            Align: =Align.Right
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(12, 59, 94, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Text: |
+              ="$" & Text(Sum(colReallocScope, funds_allocated), "[$-en-US]#,##0")
+            Visible: =locReallocPanelOpen
+            Width: =120
+            X: =Parent.Width - 136
+            Y: =Parent.Height - 162
+      - Realloc_TotalLabel:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(27, 31, 36, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =20
+            Size: =12
+            Text: ="Total Allocated"
+            Visible: =locReallocPanelOpen
+            Width: =200
+            X: =Parent.Width - 484
+            Y: =Parent.Height - 162
+      - Realloc_ColHdr_BG:
+          Control: Rectangle@2.3.0
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(246, 247, 249, 1)
+            Height: =32
+            Visible: =locReallocPanelOpen
+            Width: =500
+            X: =Parent.Width - 500
+            Y: =68
+      - Realloc_ColHdr_Alloc:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            Align: =Align.Right
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(87, 97, 112, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =18
+            Size: =11
+            Text: ="Funds Allocated"
+            Visible: =locReallocPanelOpen
+            Width: =130
+            X: =Parent.Width - 136
+            Y: =75
+      - Realloc_ColHdr_BU:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(87, 97, 112, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =18
+            Size: =11
+            Text: ="Business Unit"
+            Visible: =locReallocPanelOpen
+            Width: =120
+            X: =Parent.Width - 284
+            Y: =75
+      - Realloc_ColHdr_Activity:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(87, 97, 112, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =18
+            Size: =11
+            Text: ="Activity"
+            Visible: =locReallocPanelOpen
+            Width: =200
+            X: =Parent.Width - 484
+            Y: =75
+      - Realloc_PanelHeaderBG:
+          Control: Rectangle@2.3.0
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 255, 1)
+            Fill: =RGBA(12, 59, 94, 1)
+            Height: =68
+            Visible: =locReallocPanelOpen
+            Width: =500
+            X: =Parent.Width - 500
+      - Realloc_CloseBtn:
+          Control: Classic/Button@2.2.0
+          Group: Realloc
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =ColorFade(Self.Fill, -15%)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledBorderColor: =ColorFade(Self.BorderColor, 70%)
+            DisabledColor: =ColorFade(Self.Fill, 90%)
+            DisabledFill: =ColorFade(Self.Fill, 70%)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 0.18)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =32
+            HoverBorderColor: =ColorFade(Self.BorderColor, 20%)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(255, 255, 255, 0.28)
+            OnSelect: =Set(locReallocPanelOpen, false); Clear(colReallocEdits)
+            PressedBorderColor: =Self.Fill
+            PressedColor: =Self.Fill
+            PressedFill: =Self.Color
+            Size: =13
+            Text: ="✕"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Visible: =locReallocPanelOpen
+            Width: =32
+            X: =Parent.Width - 48
+            Y: =18
+      - Realloc_ScopeNote:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(184, 215, 240, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =18
+            Size: =10
+            Text: |-
+              ="Scope: " & If(locIsAdmin, "All Business Units", locUserDisplayName & "'s branch")
+            Visible: =locReallocPanelOpen
+            Width: =400
+            X: =Parent.Width - 480
+            Y: =42
+      - Realloc_PanelTitle:
+          Control: Label@2.5.1
+          Group: Realloc
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =26
+            Size: =16
+            Text: ="Reallocate Funds"
+            Visible: =locReallocPanelOpen
+            Width: =400
+            X: =Parent.Width - 480
+            Y: =13

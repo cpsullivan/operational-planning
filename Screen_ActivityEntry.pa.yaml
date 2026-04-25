@@ -1,0 +1,942 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+#
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+#
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  Screen_ActivityEntry:
+    Properties:
+      Fill: =RGBA(246, 247, 249, 1)
+      LoadingSpinnerColor: =RGBA(0, 51, 102, 1)
+      OnVisible: |-
+        =Set(locAE_FY, If(IsBlank(locCurrentFY), "2025-26", locCurrentFY));
+        Set(locAE_Quarter, "Q2");
+        Set(locAE_ActStatus, "On Target");
+        Set(locAE_ApprStatus, "Draft");
+        Set(locAE_FundsObligated, 0);
+        Set(locAE_FundsDisbursed, 0);
+        Set(locAE_Notes, "")
+    Children:
+      - AE_Header_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 0)
+            Fill: =RGBA(12, 59, 94, 1)
+            Height: =70
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - AE_Title:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =30
+            Size: =14
+            Text: ="TCS Operational Planning — Activity Entry"
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =Parent.Width
+            X: =0
+            Y: =20
+      - AE_UserRole:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Right
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(255, 255, 255, 0.7)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =30
+            Size: =11
+            Text: =locUserDisplayName & "  |  " & locUserRole
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =240
+            X: =Parent.Width - 256
+            Y: =20
+      - AE_Back_Btn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =RGBA(255, 255, 255, 0.25)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledBorderColor: =RGBA(255, 255, 255, 0.1)
+            DisabledColor: =RGBA(255, 255, 255, 0.4)
+            DisabledFill: =RGBA(255, 255, 255, 0.05)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 0.15)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Semibold
+            Height: =36
+            HoverBorderColor: =RGBA(255, 255, 255, 0.4)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(255, 255, 255, 0.25)
+            OnSelect: =Navigate(Screen_Dashboard, ScreenTransition.Fade)
+            PressedBorderColor: =RGBA(255, 255, 255, 0.7)
+            PressedColor: =Self.Color
+            PressedFill: =RGBA(255, 255, 255, 0.35)
+            Size: =11
+            Text: ="← Dashboard"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Width: =130
+            X: =16
+            Y: =17
+      - AE_ColDivider:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 0)
+            Fill: =RGBA(209, 213, 218, 1)
+            Height: =640
+            Width: =1
+            X: =399
+            Y: =128
+      - AE_Card_Selector_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =130
+            Width: =368
+            X: =16
+            Y: =86
+      - AE_Sel_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =8
+            Text: ="Select Activity"
+            Width: =340
+            X: =29
+            Y: =95
+      - AE_Sel_Dropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(246, 247, 249, 1)
+            ChevronDisabledBackground: =RGBA(235, 233, 229, 1)
+            ChevronDisabledFill: =RGBA(186, 186, 186, 1)
+            ChevronFill: =RGBA(98, 107, 119, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, -10%)
+            ChevronHoverFill: =Self.ChevronFill
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(246, 247, 249, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =38
+            HoverColor: =Self.Color
+            HoverFill: =ColorFade(Self.Fill, -10%)
+            Items: ='Bp Activities'
+            Items.Value: =activity_id
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.Fill, -20%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(12, 59, 94, 1)
+            Size: =11
+            Width: =340
+            X: =29
+            Y: =111
+      - AE_Sel_Hint:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Showing activities in your business unit scope"
+            Width: =340
+            X: =29
+            Y: =158
+      - AE_Sel_Alloc_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Funds Allocated (read-only)"
+            Width: =160
+            X: =29
+            Y: =177
+      - AE_Sel_Alloc_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =16
+            Size: =11
+            Text: |-
+              =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), "—", "$" & Text(AE_Sel_Dropdown.Selected.funds_allocated, "[$-en-US]#,##0"))
+            Width: =160
+            X: =29
+            Y: =191
+      - AE_Sel_BP_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Business Plan"
+            Width: =160
+            X: =199
+            Y: =177
+      - AE_Sel_BP_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =16
+            Size: =11
+            Text: |-
+              =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), "—", AE_Sel_Dropdown.Selected.business_plan)
+            Width: =160
+            X: =199
+            Y: =191
+      - AE_Card_Detail_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =200
+            Width: =368
+            X: =16
+            Y: =228
+      - AE_Detail_Title:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =16
+            Size: =10
+            Text: ="Activity Details"
+            Width: =340
+            X: =29
+            Y: =239
+      - AE_Detail_ActId_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Activity ID"
+            Width: =160
+            X: =29
+            Y: =279
+      - AE_Detail_ActId_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =9
+            Text: |-
+              =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), "—", AE_Sel_Dropdown.Selected.activity_id)
+            Width: =160
+            X: =29
+            Y: =292
+      - AE_Detail_ActType_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Activity Type"
+            Width: =160
+            X: =29
+            Y: =307
+      - AE_Detail_ActType_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =9
+            Text: |-
+              =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), "—", AE_Sel_Dropdown.Selected.activity_type & "")
+            Width: =160
+            X: =29
+            Y: =320
+      - AE_Detail_DM_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="DM / PA"
+            Width: =160
+            X: =29
+            Y: =335
+      - AE_Detail_DM_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =9
+            Text: |-
+              =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), "—", AE_Sel_Dropdown.Selected.is_dm_pa & "")
+            Width: =160
+            X: =29
+            Y: =348
+      - AE_Detail_BU_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Business Unit"
+            Width: =160
+            X: =29
+            Y: =363
+      - AE_Detail_BU_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =9
+            Text: |-
+              =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), "—", AE_Sel_Dropdown.Selected.'Business Unit ID')
+            Width: =160
+            X: =29
+            Y: =376
+      - AE_Detail_Int_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Intention"
+            Width: =160
+            X: =29
+            Y: =391
+      - AE_Detail_Int_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =9
+            Text: |-
+              =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), "—", With({i: LookUp(colIntention, intention_id = AE_Sel_Dropdown.Selected.'Intention List Key').people_plan_intention}, If(IsBlank(i), "—", i)))
+            Width: =160
+            X: =29
+            Y: =404
+      - AE_Card_Approval_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =80
+            Width: =368
+            X: =16
+            Y: =440
+      - AE_Approval_Accent:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 0)
+            Fill: |-
+              =Switch(locAE_ApprStatus, "Draft", RGBA(169, 107, 4, 1), "Submitted", RGBA(0, 112, 192, 1), "Approved", RGBA(0, 112, 68, 1), "Rejected", RGBA(196, 49, 75, 1), RGBA(169, 107, 4, 1))
+            Height: =80
+            Width: =4
+            X: =16
+            Y: =440
+      - AE_Approval_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =8
+            Text: ="Current Approval Status"
+            Width: =330
+            X: =33
+            Y: =451
+      - AE_Approval_Value:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: |-
+              =Switch(locAE_ApprStatus, "Draft", RGBA(169, 107, 4, 1), "Submitted", RGBA(0, 112, 192, 1), "Approved", RGBA(0, 112, 68, 1), "Rejected", RGBA(196, 49, 75, 1), RGBA(169, 107, 4, 1))
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =22
+            Size: =13
+            Text: =locAE_ApprStatus
+            Width: =330
+            X: =33
+            Y: =466
+      - AE_Approval_Hint:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =14
+            Size: =8
+            Text: ="Save as Draft or Submit to start the review chain"
+            Width: =330
+            X: =33
+            Y: =491
+      - AE_Card_History_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =180
+            Width: =368
+            X: =16
+            Y: =532
+      - AE_History_Title:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =16
+            Size: =10
+            Text: ="Status History"
+            Width: =340
+            X: =29
+            Y: =543
+      - AE_History_0:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =16
+            Size: =9
+            Text: ="Q1 · Draft · saved by J.Smith · Apr 3"
+            Width: =340
+            X: =29
+            Y: =567
+      - AE_History_1:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =16
+            Size: =9
+            Text: ="Q2 · Submitted · Apr 10 · awaiting Dir"
+            Width: =340
+            X: =29
+            Y: =589
+      - AE_History_Empty:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(150, 158, 168, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =16
+            Size: =9
+            Text: ="No further history"
+            Width: =340
+            X: =29
+            Y: =613
+      - AE_FormToolbar_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =48
+            Width: =966
+            X: =400
+            Y: =70
+      - AE_Form_Title:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =22
+            Size: =11
+            Text: ="Update Activity Status"
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =600
+            X: =415
+            Y: =82
+      - AE_FY_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =9
+            Text: ="Fiscal Year"
+            Width: =220
+            X: =416
+            Y: =134
+      - AE_FY_Dropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(255, 255, 255, 1)
+            ChevronDisabledBackground: =RGBA(235, 233, 229, 1)
+            ChevronDisabledFill: =RGBA(186, 186, 186, 1)
+            ChevronFill: =RGBA(98, 107, 119, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, -10%)
+            ChevronHoverFill: =Self.ChevronFill
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =40
+            HoverColor: =Self.Color
+            HoverFill: =ColorFade(Self.Fill, -5%)
+            Items: =colFiscalYear
+            Items.Value: =fiscal_year
+            OnChange: =Set(locAE_FY, AE_FY_Dropdown.Selected.fiscal_year)
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.Fill, -10%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(12, 59, 94, 1)
+            Size: =11
+            Width: =220
+            X: =416
+            Y: =150
+      - AE_Quarter_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =9
+            Text: ="Quarter"
+            Width: =220
+            X: =652
+            Y: =134
+      - AE_Quarter_Dropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(255, 255, 255, 1)
+            ChevronDisabledBackground: =RGBA(235, 233, 229, 1)
+            ChevronDisabledFill: =RGBA(186, 186, 186, 1)
+            ChevronFill: =RGBA(98, 107, 119, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, -10%)
+            ChevronHoverFill: =Self.ChevronFill
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =40
+            HoverColor: =Self.Color
+            HoverFill: =ColorFade(Self.Fill, -5%)
+            Items: =["Q1","Q2","Q3","Q4"]
+            OnChange: =Set(locAE_Quarter, AE_Quarter_Dropdown.Selected.Value)
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.Fill, -10%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(12, 59, 94, 1)
+            Size: =11
+            Width: =220
+            X: =652
+            Y: =150
+      - AE_ActStatus_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =9
+            Text: ="Activity Status"
+            Width: =460
+            X: =416
+            Y: =230
+      - AE_ActStatus_Dropdown:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            ChevronBackground: =RGBA(255, 255, 255, 1)
+            ChevronDisabledBackground: =RGBA(235, 233, 229, 1)
+            ChevronDisabledFill: =RGBA(186, 186, 186, 1)
+            ChevronFill: =RGBA(98, 107, 119, 1)
+            ChevronHoverBackground: =ColorFade(Self.ChevronBackground, -10%)
+            ChevronHoverFill: =Self.ChevronFill
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =40
+            HoverColor: =Self.Color
+            HoverFill: =ColorFade(Self.Fill, -5%)
+            Items: =["On Target","At Risk","Off Track","Complete","Not Started"]
+            OnChange: =Set(locAE_ActStatus, AE_ActStatus_Dropdown.Selected.Value)
+            PressedColor: =Self.Color
+            PressedFill: =ColorFade(Self.Fill, -10%)
+            SelectionColor: =RGBA(255, 255, 255, 1)
+            SelectionFill: =RGBA(12, 59, 94, 1)
+            Size: =11
+            Width: =460
+            X: =416
+            Y: =246
+      - AE_Oblig_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =9
+            Text: ="Funds Obligated"
+            Width: =220
+            X: =416
+            Y: =326
+      - AE_Oblig_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =40
+            Width: =220
+            X: =416
+            Y: =342
+      - AE_Oblig_Prefix:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =22
+            Size: =11
+            Text: ="$"
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =16
+            X: =425
+            Y: =351
+      - AE_Oblig_Input:
+          Control: Classic/TextInput@2.3.1
+          Properties:
+            BorderColor: =RGBA(255, 255, 255, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            BorderThickness: =0
+            Color: =RGBA(34, 40, 49, 1)
+            Default: =Text(locAE_FundsObligated, "[$-en-US]#,##0")
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Format: =%TextFormat.RESERVED%.Number
+            Height: =34
+            HintText: ="0"
+            HoverBorderColor: =RGBA(255, 255, 255, 1)
+            HoverColor: =Self.Color
+            HoverFill: =Self.Fill
+            OnChange: =Set(locAE_FundsObligated, Value(Self.Text))
+            PressedBorderColor: =RGBA(255, 255, 255, 1)
+            PressedColor: =Self.Color
+            PressedFill: =Self.Fill
+            Size: =11
+            Width: =195
+            X: =440
+            Y: =345
+      - AE_Disb_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =9
+            Text: ="Funds Disbursed"
+            Width: =220
+            X: =652
+            Y: =326
+      - AE_Disb_BG:
+          Control: Rectangle@2.3.0
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =BorderStyle.Solid
+            BorderThickness: =1
+            Fill: =RGBA(255, 255, 255, 1)
+            Height: =40
+            Width: =220
+            X: =652
+            Y: =342
+      - AE_Disb_Prefix:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            Height: =22
+            Size: =11
+            Text: ="$"
+            VerticalAlign: =VerticalAlign.Middle
+            Width: =16
+            X: =661
+            Y: =351
+      - AE_Disb_Input:
+          Control: Classic/TextInput@2.3.1
+          Properties:
+            BorderColor: =RGBA(255, 255, 255, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            BorderThickness: =0
+            Color: =RGBA(34, 40, 49, 1)
+            Default: =Text(locAE_FundsDisbursed, "[$-en-US]#,##0")
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Format: =%TextFormat.RESERVED%.Number
+            Height: =34
+            HintText: ="0"
+            HoverBorderColor: =RGBA(255, 255, 255, 1)
+            HoverColor: =Self.Color
+            HoverFill: =Self.Fill
+            OnChange: =Set(locAE_FundsDisbursed, Value(Self.Text))
+            PressedBorderColor: =RGBA(255, 255, 255, 1)
+            PressedColor: =Self.Color
+            PressedFill: =Self.Fill
+            Size: =11
+            Width: =195
+            X: =676
+            Y: =345
+      - AE_Notes_Label:
+          Control: Label@2.5.1
+          Properties:
+            BorderColor: =RGBA(0, 0, 0, 1)
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Height: =14
+            Size: =9
+            Text: ="Notes / Comments"
+            Width: =934
+            X: =416
+            Y: =422
+      - AE_Notes_Input:
+          Control: Classic/TextInput@2.3.1
+          Properties:
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            BorderThickness: =1
+            Color: =RGBA(34, 40, 49, 1)
+            Default: =locAE_Notes
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(255, 255, 255, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Format: =%TextFormat.RESERVED%.Text
+            Height: =156
+            HintText: ="Add notes about activity progress, blockers, or changes…"
+            HoverBorderColor: =ColorFade(Self.BorderColor, -10%)
+            HoverColor: =Self.Color
+            HoverFill: =Self.Fill
+            Mode: =%TextMode.RESERVED%.MultiLine
+            OnChange: =Set(locAE_Notes, Self.Text)
+            PressedBorderColor: =Self.BorderColor
+            PressedColor: =Self.Color
+            PressedFill: =Self.Fill
+            Size: =11
+            Width: =934
+            X: =416
+            Y: =438
+      - AE_SaveDraft_Btn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =RGBA(209, 213, 218, 1)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            BorderThickness: =1
+            Color: =RGBA(34, 40, 49, 1)
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(242, 242, 242, 1)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(246, 247, 249, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Semibold
+            Height: =44
+            HoverBorderColor: =RGBA(150, 158, 168, 1)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(232, 234, 237, 1)
+            OnSelect: =Set(locAE_ApprStatus, "Draft"); Notify("Draft saved", NotificationType.Success, 2000)
+            PressedBorderColor: =RGBA(98, 107, 119, 1)
+            PressedColor: =Self.Color
+            PressedFill: =RGBA(218, 222, 227, 1)
+            Size: =12
+            Text: ="Save Draft"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Width: =220
+            X: =416
+            Y: =680
+      - AE_Submit_Btn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =ColorFade(Self.Fill, -15%)
+            BorderStyle: =%BorderStyle.RESERVED%.Solid
+            Color: =RGBA(255, 255, 255, 1)
+            DisabledBorderColor: =RGBA(186, 186, 186, 1)
+            DisabledColor: =RGBA(255, 255, 255, 1)
+            DisabledFill: =ColorFade(Self.Fill, 70%)
+            DisplayMode: =If(IsBlank(AE_Sel_Dropdown.Selected.activity_id), %DisplayMode.RESERVED%.Disabled, %DisplayMode.RESERVED%.Edit)
+            Fill: =RGBA(12, 59, 94, 1)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Semibold
+            Height: =44
+            HoverBorderColor: =ColorFade(Self.BorderColor, 20%)
+            HoverColor: =Self.Color
+            HoverFill: =RGBA(17, 80, 128, 1)
+            OnSelect: =Set(locAE_ApprStatus, "Submitted"); Notify("Submitted for review", NotificationType.Success, 2000)
+            PressedBorderColor: =Self.Fill
+            PressedColor: =Self.Color
+            PressedFill: =RGBA(8, 42, 67, 1)
+            Size: =12
+            Text: ="Submit for Review"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Width: =380
+            X: =652
+            Y: =680
+      - AE_Cancel_Btn:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Align: =%Align.RESERVED%.Center
+            BorderColor: =RGBA(0, 0, 0, 0)
+            BorderStyle: =%BorderStyle.RESERVED%.None
+            BorderThickness: =0
+            Color: =RGBA(98, 107, 119, 1)
+            DisabledBorderColor: =RGBA(0, 0, 0, 0)
+            DisabledColor: =RGBA(186, 186, 186, 1)
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =%DisplayMode.RESERVED%.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =%Font.RESERVED%.'Open Sans'
+            FontWeight: =%FontWeight.RESERVED%.Normal
+            Height: =44
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            HoverColor: =RGBA(34, 40, 49, 1)
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =Navigate(Screen_Dashboard, ScreenTransition.Fade)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            PressedColor: =RGBA(34, 40, 49, 1)
+            PressedFill: =RGBA(0, 0, 0, 0)
+            Size: =12
+            Text: ="Cancel"
+            VerticalAlign: =%VerticalAlign.RESERVED%.Middle
+            Width: =160
+            X: =1048
+            Y: =680

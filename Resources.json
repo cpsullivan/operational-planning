@@ -1,0 +1,88 @@
+{
+  "Resources": [
+    {
+      "Name": "SampleImage",
+      "Schema": "i",
+      "IsSampleData": true,
+      "IsWritable": false,
+      "Type": "ResourceInfo",
+      "FileName": "/ctrllib/image/images/SampleImage.svg",
+      "Path": "/ctrllib/image/images/SampleImage.svg",
+      "Content": "Image",
+      "ResourceKind": "Uri",
+      "RootPath": "ms-appx:///ctrllib/image/images/SampleImage.svg"
+    },
+    {
+      "Name": "Logo",
+      "Schema": "i",
+      "IsSampleData": false,
+      "IsWritable": false,
+      "Type": "ResourceInfo",
+      "FileName": "408b1df7-f207-4361-9c45-509d5fac70a3.png",
+      "Path": "Assets\\Images\\408b1df7-f207-4361-9c45-509d5fac70a3.png",
+      "Content": "Image",
+      "ResourceKind": "LocalFile",
+      "RootPath": "https://dsprdil101cca.blob.core.windows.net/b1c4fc2a-da90-4484-8a48-81253e6e13bf-1/resource/NDA4YjFkZjctZjIwNy00MzYxLTljNDUtNTA5ZDVmYWM3MGEz.png?skoid=58690ece-ec83-4ce2-9ce8-883d4d6a54ee&sktid=975f013f-7f24-47e8-a7d3-abc4752bf346&skt=2026-04-25T01%3A35%3A10Z&ske=2026-04-26T01%3A50%3A10Z&sks=b&skv=2023-01-03&sv=2023-01-03&spr=https&se=2026-04-26T01%3A50%3A10Z&sr=b&sp=r&sig=m0nvxxKsR%2BeAEaoI%2BWfDNNOQMiTPFLQ67k5wjDDOSuc%3D"
+    },
+    {
+      "Name": "MA Logo",
+      "Schema": "i",
+      "IsSampleData": false,
+      "IsWritable": false,
+      "Type": "ResourceInfo",
+      "FileName": "dc84436a-fb9e-4e70-a016-f96c368e24c5.png",
+      "Path": "Assets\\Images\\dc84436a-fb9e-4e70-a016-f96c368e24c5.png",
+      "Content": "Image",
+      "ResourceKind": "LocalFile",
+      "RootPath": "https://dsprdil101cca.blob.core.windows.net/b1c4fc2a-da90-4484-8a48-81253e6e13bf-1/resource/ZGM4NDQzNmEtZmI5ZS00ZTcwLWEwMTYtZjk2YzM2OGUyNGM1.png?skoid=58690ece-ec83-4ce2-9ce8-883d4d6a54ee&sktid=975f013f-7f24-47e8-a7d3-abc4752bf346&skt=2026-04-25T01%3A35%3A10Z&ske=2026-04-26T01%3A50%3A10Z&sks=b&skv=2023-01-03&sv=2023-01-03&spr=https&se=2026-04-26T01%3A50%3A10Z&sr=b&sp=r&sig=VZQi7gVJEZn946UtwyZ3dDq1nsl4eY7o%2BO4mRaDHY%2BQ%3D"
+    },
+    {
+      "Name": "GOA logo",
+      "Schema": "i",
+      "IsSampleData": false,
+      "IsWritable": false,
+      "Type": "ResourceInfo",
+      "FileName": "fffef431-2aac-4f64-86e9-bcc795e88781.png",
+      "Path": "Assets\\Images\\fffef431-2aac-4f64-86e9-bcc795e88781.png",
+      "Content": "Image",
+      "ResourceKind": "LocalFile",
+      "RootPath": "https://dsprdil101cca.blob.core.windows.net/b1c4fc2a-da90-4484-8a48-81253e6e13bf-1/resource/ZmZmZWY0MzEtMmFhYy00ZjY0LTg2ZTktYmNjNzk1ZTg4Nzgx.png?skoid=58690ece-ec83-4ce2-9ce8-883d4d6a54ee&sktid=975f013f-7f24-47e8-a7d3-abc4752bf346&skt=2026-04-25T01%3A35%3A10Z&ske=2026-04-26T01%3A50%3A10Z&sks=b&skv=2023-01-03&sv=2023-01-03&spr=https&se=2026-04-26T01%3A50%3A10Z&sr=b&sp=r&sig=plorMDcqwaPuy5GzOVdwIjXbYd6SwURkCyDQc6Oz5m8%3D"
+    },
+    {
+      "Name": "SampleCardImage",
+      "Schema": "i",
+      "IsSampleData": true,
+      "IsWritable": false,
+      "Type": "ResourceInfo",
+      "FileName": "/ctrllib/modernCard/images/SampleCardImage.svg",
+      "Path": "/ctrllib/modernCard/images/SampleCardImage.svg",
+      "Content": "Image",
+      "ResourceKind": "Uri",
+      "RootPath": "ms-appx:///ctrllib/modernCard/images/SampleCardImage.svg"
+    },
+    {
+      "Name": "SampleCardHeaderImage",
+      "Schema": "i",
+      "IsSampleData": true,
+      "IsWritable": false,
+      "Type": "ResourceInfo",
+      "FileName": "/ctrllib/modernCard/images/SampleCardHeaderImage.svg",
+      "Path": "/ctrllib/modernCard/images/SampleCardHeaderImage.svg",
+      "Content": "Image",
+      "ResourceKind": "Uri",
+      "RootPath": "ms-appx:///ctrllib/modernCard/images/SampleCardHeaderImage.svg"
+    },
+    {
+      "Name": "MA-2colour-RGB-H-sky",
+      "Schema": "i",
+      "IsSampleData": false,
+      "IsWritable": false,
+      "Type": "ResourceInfo",
+      "FileName": "a082ed81-3355-4b19-b58d-4866248d4789.png",
+      "Path": "Assets\\Images\\a082ed81-3355-4b19-b58d-4866248d4789.png",
+      "Content": "Image",
+      "ResourceKind": "LocalFile",
+      "RootPath": "https://dsprdil101cca.blob.core.windows.net/b1c4fc2a-da90-4484-8a48-81253e6e13bf-1/resource/YTA4MmVkODEtMzM1NS00YjE5LWI1OGQtNDg2NjI0OGQ0Nzg5.png?skoid=58690ece-ec83-4ce2-9ce8-883d4d6a54ee&sktid=975f013f-7f24-47e8-a7d3-abc4752bf346&skt=2026-04-25T01%3A35%3A10Z&ske=2026-04-26T01%3A50%3A10Z&sks=b&skv=2023-01-03&sv=2023-01-03&spr=https&se=2026-04-26T01%3A50%3A10Z&sr=b&sp=r&sig=fYT81PEkU0d75E0urflRmC%2FqbrQmKPcISpPy2%2FNXXhQ%3D"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "QualifiedValues": [
+    {
+      "Namespace": "Bp Activities (Forms)",
+      "Kind": "default.cds_ma_activityid_forms",
+      "Values": {
+        "Information": "1625dd8f-f065-4e12-aa56-c4d020b57e0e"
+      }
+    },
+    {
+      "Namespace": "Bp Activity Status (Forms)",
+      "Kind": "default.cds_ma_activitystatus_forms",
+      "Values": {
+        "Information": "dfa38db7-25ba-42be-a676-8ec209ec889b"
+      }
+    },
+    {
+      "Namespace": "Junction BU IDs (Forms)",
+      "Kind": "default.cds_ma_bujunction_forms",
+      "Values": {
+        "Information": "530fc441-a300-4344-b25e-ef555f8e5c19"
+      }
+    },
+    {
+      "Namespace": "Lookup Business Units (Forms)",
+      "Kind": "default.cds_ma_lookupbusinessunit_forms",
+      "Values": {
+        "Information": "dd3c0d89-a9d3-40b7-aaf6-cd0ac186b9e7"
+      }
+    },
+    {
+      "Namespace": "Lookup_Fiscal_Yearss (Forms)",
+      "Kind": "default.cds_crb7f_lookup_fiscal_years_forms",
+      "Values": {
+        "Information": "d8d7d49e-a0a1-479b-9c0b-d355e4afc2fd"
+      }
+    },
+    {
+      "Namespace": "Report Branch Activities (Forms)",
+      "Kind": "default.cds_ma_reportbranchactivity_forms",
+      "Values": {
+        "Information": "06227880-4696-4f57-ab6e-f4c81797429b"
+      }
+    },
+    {
+      "Namespace": "Users (Forms)",
+      "Kind": "default.cds_ma_users_forms",
+      "Values": {
+        "Information": "33f09c05-dd67-4cbc-99e2-d3ccbeb07325"
+      }
+    }
+  ]
+}

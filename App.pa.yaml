@@ -1,0 +1,53 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+App:
+  Properties:
+    ConfirmExit: =true
+    ConfirmExitMessage: ="You have unsaved changes. Leave anyway?"
+    OnStart: |-
+      =Set(locUserEmail, "");
+      Set(locUserRole, "");
+      Set(locUserId, "");
+      Set(locUserDisplayName, "");
+      Set(locIsAdmin, false);
+      Set(locLoadError, "");
+      Set(locCurrentFY, "2025-26");
+      Set(locAIBuilderEnabled, false);
+      ClearCollect(colUserScope,      {business_unit_id: ""});
+      Clear(colUserScope);
+      ClearCollect(colBusinessUnitID, {business_unit_id: "", business_unit_name: "", business_unit_cost_centre: ""});
+      Clear(colBusinessUnitID);
+      ClearCollect(colBusinessPlan,   {BusinessPlan: ""});
+      ClearCollect(colOutcome,        {business_plan: "", outcome_id: "", outcome_title: "", outcome_statement: "", outcome_description: ""});
+      ClearCollect(colKeyObjective,   {business_plan: "", outcome_id: "", key_objective_id: "", key_objective: 0, ko_description: ""});
+      ClearCollect(colInitiative,     {business_plan: "", key_objective_id: "", initiative_id: "", initiative: ""});
+      ClearCollect(colStrategy,       {outcome_id: "", strategy_id: "", people_plan_strategy: ""});
+      ClearCollect(colIntention,      {strategy_id: "", intention_id: "", people_plan_intention: ""});
+      ClearCollect(colFiscalYear,     {fiscal_year: ""});
+      Clear(colBusinessPlan);
+      Clear(colOutcome);
+      Clear(colKeyObjective);
+      Clear(colInitiative);
+      Clear(colStrategy);
+      Clear(colIntention);
+      Set(locDashFilters, {fiscal_year: "", quarter: "", activity_type: "", business_plan: "", intention_id: "", is_dm_pa: "", business_unit_id: "", outcome_id: ""});
+      Set(locReallocPanelOpen, false);
+      Set(locPrintUrl, "");
+      Set(locPrintPending, false);
+      ClearCollect(colStatusQtrMap, {ma_activitystatusid: GUID("00000000-0000-0000-0000-000000000000"), qtr: ""});
+      Clear(colStatusQtrMap);
+      ClearCollect(colFilteredStatus, {ma_activitystatusid: "", ma_activityid: "", ma_fiscal_year: "", ma_quarter: "", ma_approval_status: "", ma_activity_status: "", ma_funds_obligated: 0, ma_funds_disbursed: 0, ma_activity_name: "", ma_businessunitid: "", ma_business_plan: "", ma_intention_id: "", ma_funds_allocated: 0, ma_activity_type: "", ma_is_dm_pa: "", ma_outcome_id: ""});
+      Clear(colFilteredStatus);
+      ClearCollect(colSpendingChart, {Quarter: "", Allocated: 0, Obligated: 0, Disbursed: 0});
+      Clear(colSpendingChart);
+      ClearCollect(colReallocEdits, {ma_activityid: "", ma_funds_allocated: 0});
+      Clear(colReallocEdits);
+      Clear(colFiscalYear)
+    StartScreen: =Screen_Home
+    Theme: =PowerAppsTheme
